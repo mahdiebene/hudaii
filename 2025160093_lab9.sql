@@ -1,0 +1,156 @@
+-- CSE302 Lab 9 | Student ID: 2025160093
+-- Run once in SQL*Plus or SQL Developer's Run Script mode.
+SET SERVEROUTPUT ON
+
+-- Task 1: CGPA is unconstrained NUMBER so invalid values are not silently
+-- rounded to the permitted range before the validation triggers inspect them.
+CREATE TABLE student_2025160093 (
+    StudentID VARCHAR2(4) PRIMARY KEY,
+    Name VARCHAR2(50) NOT NULL,
+    Department VARCHAR2(10),
+    CGPA NUMBER
+);
+
+INSERT INTO student_2025160093 VALUES('S001', 'Rahim', 'CSE', 3.50);
+INSERT INTO student_2025160093 VALUES('S002', 'Karim', 'CSE', 3.20);
+INSERT INTO student_2025160093 VALUES('S003', 'Nila', 'BBA', 3.80);
+INSERT INTO student_2025160093 VALUES('S004', 'Sumi', 'EEE', 3.10);
+COMMIT;
+
+-- Task 2(i): Prevent inserting CGPA greater than 4.00.
+CREATE OR REPLACE TRIGGER stu_ins_max_2025160093
+BEFORE INSERT ON student_2025160093
+FOR EACH ROW
+BEGIN
+    IF :NEW.CGPA > 4.00 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'CGPA cannot exceed 4.00.');
+    END IF;
+END;
+/
+
+-- Task 2(ii): Prevent inserting negative CGPA.
+CREATE OR REPLACE TRIGGER stu_ins_min_2025160093
+BEFORE INSERT ON student_2025160093
+FOR EACH ROW
+BEGIN
+    IF :NEW.CGPA < 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'CGPA cannot be negative.');
+    END IF;
+END;
+/
+
+-- Task 2(iii): Uppercase names on insertion.
+CREATE OR REPLACE TRIGGER stu_ins_name_2025160093
+BEFORE INSERT ON student_2025160093
+FOR EACH ROW
+BEGIN
+    :NEW.Name := UPPER(:NEW.Name);
+END;
+/
+
+-- Task 2(iv): Prevent updating CGPA above 4.00.
+CREATE OR REPLACE TRIGGER stu_upd_max_2025160093
+BEFORE UPDATE OF CGPA ON student_2025160093
+FOR EACH ROW
+BEGIN
+    IF :NEW.CGPA > 4.00 THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Updated CGPA cannot exceed 4.00.');
+    END IF;
+END;
+/
+
+-- Task 2(v): Prevent updating CGPA to a negative value.
+CREATE OR REPLACE TRIGGER stu_upd_min_2025160093
+BEFORE UPDATE OF CGPA ON student_2025160093
+FOR EACH ROW
+BEGIN
+    IF :NEW.CGPA < 0 THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Updated CGPA cannot be negative.');
+    END IF;
+END;
+/
+
+-- Task 2(vi): Uppercase names whenever a row is updated.
+CREATE OR REPLACE TRIGGER stu_upd_name_2025160093
+BEFORE UPDATE ON student_2025160093
+FOR EACH ROW
+BEGIN
+    :NEW.Name := UPPER(:NEW.Name);
+END;
+/
+
+-- Task 2(vii): Prevent deleting students with CGPA 4.00.
+CREATE OR REPLACE TRIGGER stu_del_top_2025160093
+BEFORE DELETE ON student_2025160093
+FOR EACH ROW
+BEGIN
+    IF :OLD.CGPA = 4.00 THEN
+        RAISE_APPLICATION_ERROR(-20005, 'Cannot delete a student with CGPA 4.00.');
+    END IF;
+END;
+/
+
+-- Task 2(viii): Insertion message.
+CREATE OR REPLACE TRIGGER stu_ins_msg_2025160093
+AFTER INSERT ON student_2025160093
+FOR EACH ROW
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Student inserted: ' || :NEW.StudentID);
+END;
+/
+
+-- Task 2(ix): Update message.
+CREATE OR REPLACE TRIGGER stu_upd_msg_2025160093
+AFTER UPDATE ON student_2025160093
+FOR EACH ROW
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Student updated: ' || :NEW.StudentID);
+END;
+/
+
+-- Task 2(x): Deletion message.
+CREATE OR REPLACE TRIGGER stu_del_msg_2025160093
+AFTER DELETE ON student_2025160093
+FOR EACH ROW
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('A student record was deleted.');
+END;
+/
+
+-- Task 2(xi): Display the ID and name of the deleted student.
+CREATE OR REPLACE TRIGGER stu_del_info_2025160093
+AFTER DELETE ON student_2025160093
+FOR EACH ROW
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Deleted StudentID: ' || :OLD.StudentID || ', Name: ' || :OLD.Name);
+END;
+/
+
+-- Task 2(xii): Display both old and new CGPA values.
+CREATE OR REPLACE TRIGGER stu_upd_cgpa_2025160093
+AFTER UPDATE OF CGPA ON student_2025160093
+FOR EACH ROW
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Student ' || :NEW.StudentID
+        || ': old CGPA = ' || NVL(TO_CHAR(:OLD.CGPA), 'NULL')
+        || ', new CGPA = ' || NVL(TO_CHAR(:NEW.CGPA), 'NULL'));
+END;
+/
+
+-- Task 2(xiii): Prevent department changes, including changes to/from NULL.
+CREATE OR REPLACE TRIGGER stu_dept_lock_2025160093
+BEFORE UPDATE OF Department ON student_2025160093
+FOR EACH ROW
+BEGIN
+    IF :OLD.Department <> :NEW.Department
+       OR (:OLD.Department IS NULL AND :NEW.Department IS NOT NULL)
+       OR (:OLD.Department IS NOT NULL AND :NEW.Department IS NULL) THEN
+        RAISE_APPLICATION_ERROR(-20006, 'Department cannot change after admission.');
+    END IF;
+END;
+/
+
+SELECT * FROM student_2025160093 ORDER BY StudentID;
+SELECT name, line, position, text FROM user_errors
+WHERE type = 'TRIGGER' AND name LIKE '%2025160093'
+ORDER BY name, sequence;
