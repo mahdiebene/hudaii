@@ -1,8 +1,3 @@
--- CSE302 Lab 3 | Student ID: 2025160093
--- Banking schema/data from the manual's linked banking.sql.
--- bank_ prefixes distinguish these tables from the different Lab 2 schema.
--- Run this setup once; Labs 5 and 6 reuse it. No existing tables are dropped.
-
 CREATE TABLE bank_branch_2025160093 (
     branch_name VARCHAR2(15) PRIMARY KEY,
     branch_city VARCHAR2(15) NOT NULL,
@@ -108,45 +103,36 @@ INSERT INTO bank_borrower_2025160093 VALUES('McBride', 'L-20');
 INSERT INTO bank_borrower_2025160093 VALUES('Smith', 'L-21');
 COMMIT;
 
--- 1. Branches with assets greater than 1000000.
 SELECT branch_name, branch_city FROM bank_branch_2025160093 WHERE assets > 1000000;
 
--- 2. Downtown accounts OR balances between 600 and 750 inclusive.
 SELECT account_number, balance FROM bank_account_2025160093
 WHERE branch_name = 'Downtown' OR balance BETWEEN 600 AND 750;
 
--- 3. Accounts at branches in Rye.
 SELECT a.account_number
 FROM bank_account_2025160093 a
 JOIN bank_branch_2025160093 b ON b.branch_name = a.branch_name
 WHERE b.branch_city = 'Rye';
 
--- 4. Loans of at least 1000 belonging to Harrison customers.
 SELECT DISTINCT l.loan_number
 FROM bank_loan_2025160093 l
 JOIN bank_borrower_2025160093 b ON b.loan_number = l.loan_number
 JOIN bank_customer_2025160093 c ON c.customer_name = b.customer_name
 WHERE l.amount >= 1000 AND c.customer_city = 'Harrison';
 
--- 5. Accounts in descending balance order.
 SELECT * FROM bank_account_2025160093 ORDER BY balance DESC, account_number;
 
--- 6. Customers in alphabetical city order.
 SELECT * FROM bank_customer_2025160093 ORDER BY customer_city, customer_name;
 
--- 7. Customers with both an account and a loan: INTERSECT.
 SELECT customer_name FROM bank_depositor_2025160093
 INTERSECT
 SELECT customer_name FROM bank_borrower_2025160093;
 
--- 8. Customers with an account or a loan: UNION.
 SELECT c.* FROM bank_customer_2025160093 c
 JOIN bank_depositor_2025160093 d ON d.customer_name = c.customer_name
 UNION
 SELECT c.* FROM bank_customer_2025160093 c
 JOIN bank_borrower_2025160093 b ON b.customer_name = c.customer_name;
 
--- 9. Borrowers without accounts: MINUS.
 SELECT c.customer_name, c.customer_city
 FROM bank_customer_2025160093 c
 JOIN bank_borrower_2025160093 b ON b.customer_name = c.customer_name
@@ -155,34 +141,28 @@ SELECT c.customer_name, c.customer_city
 FROM bank_customer_2025160093 c
 JOIN bank_depositor_2025160093 d ON d.customer_name = c.customer_name;
 
--- 10. Total branch assets.
 SELECT SUM(assets) AS total_assets FROM bank_branch_2025160093;
 
--- 11. Average account balance for every branch; NULL means no accounts.
 SELECT b.branch_name, AVG(a.balance) AS average_balance
 FROM bank_branch_2025160093 b
 LEFT JOIN bank_account_2025160093 a ON a.branch_name = b.branch_name
 GROUP BY b.branch_name;
 
--- 12. Average account balance for every branch city.
 SELECT b.branch_city, AVG(a.balance) AS average_balance
 FROM bank_branch_2025160093 b
 LEFT JOIN bank_account_2025160093 a ON a.branch_name = b.branch_name
 GROUP BY b.branch_city;
 
--- 13. Minimum loan for every branch; NULL means no loans.
 SELECT b.branch_name, MIN(l.amount) AS minimum_loan
 FROM bank_branch_2025160093 b
 LEFT JOIN bank_loan_2025160093 l ON l.branch_name = b.branch_name
 GROUP BY b.branch_name;
 
--- 14. Loan count for every branch, including zero.
 SELECT b.branch_name, COUNT(l.loan_number) AS loan_count
 FROM bank_branch_2025160093 b
 LEFT JOIN bank_loan_2025160093 l ON l.branch_name = b.branch_name
 GROUP BY b.branch_name;
 
--- 15. Owners of the highest-balance accounts, including ties.
 SELECT d.customer_name, a.account_number
 FROM bank_account_2025160093 a
 JOIN bank_depositor_2025160093 d ON d.account_number = a.account_number

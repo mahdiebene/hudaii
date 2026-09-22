@@ -1,10 +1,3 @@
--- CSE302 Lab 4 | Student ID: 2025160093
--- Prerequisite: run 2025160093_lab1.sql once.
--- The manual names no individual HackerRank problems. Its assessed tasks are
--- creating a HackerRank account and practising SQL there; those are web tasks.
--- The following statements cover every built-in function in the handout.
-
--- String functions.
 SELECT ASCII('t') AS ascii_value FROM dual;
 SELECT CHR(116) AS character_value FROM dual;
 SELECT CONCAT('Tech on', ' the Net') AS concatenated FROM dual;
@@ -21,7 +14,6 @@ SELECT RTRIM('Techxyxzyyy', 'xyz') AS right_trimmed FROM dual;
 SELECT REPLACE('222tech', '2', '3') AS replaced FROM dual;
 SELECT SUBSTR('TechOnTheNet', 1, 4) AS substring_value FROM dual;
 
--- Numeric functions.
 SELECT ABS(-23) AS absolute_value FROM dual;
 SELECT BITAND(5, 3) AS bitwise_and FROM dual;
 SELECT CEIL(32.65) AS ceiling_value FROM dual;
@@ -39,11 +31,9 @@ SELECT ROUND(125.315, 2) AS rounded FROM dual;
 SELECT TRUNC(125.815, 2) AS truncated FROM dual;
 SELECT id, name, ROUND(salary, 2) AS salary FROM instructor_2025160093;
 
--- ROWNUM: sort inside the subquery before assigning row numbers.
 SELECT ROWNUM AS row_number, i.*
 FROM (SELECT * FROM instructor_2025160093 ORDER BY id) i;
 
--- Date functions: explicit date literals avoid session-format dependencies.
 SELECT ADD_MONTHS(DATE '2003-08-21', -3) AS three_months_earlier FROM dual;
 SELECT EXTRACT(YEAR FROM DATE '2003-08-22') AS year_value FROM dual;
 SELECT TO_CHAR(SYSDATE, 'YYYY/MM/DD') AS formatted_today FROM dual;
